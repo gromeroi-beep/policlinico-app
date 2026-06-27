@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
-RUN docker-php-ext-install gd pdo pdo_mysql mbstring exif pcntl bcmath
+RUN docker-php-ext-install gd pdo pdo_mysql mbstring exif pcntl bcmath zip
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
