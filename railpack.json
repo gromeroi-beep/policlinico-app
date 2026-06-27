@@ -1,3 +1,4 @@
 { 
-  "phpVersion": "8.2.20" 
+  "provider": "php", 
+  "phpVersion": "8.2" 
 } 
