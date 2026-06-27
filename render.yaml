@@ -1,0 +1,18 @@
+services: 
+  - type: web 
+    name: policlinico-app 
+    runtime: image 
+    repo: https://github.com/gromeroi-beep/policlinico-app 
+    plan: free 
+    dockerfilePath: ./Dockerfile 
+    envVars: 
+      - key: APP_NAME 
+        value: PoliclinicoFlores 
+      - key: APP_ENV 
+        value: production 
+      - key: APP_KEY 
+        value: base64:JlH6fCEc26yVCOqtFq0R0/TrHuEtgLvn6j9NXpJg+N0= 
+      - key: APP_DEBUG 
+        value: false 
+      - key: APP_URL 
+        value: https://policlinico-app.onrender.com 
